@@ -1,0 +1,22 @@
+%Set up parameters: d is the number of columns, m is the number of rows, s
+%is the sparsity level, enorm is the norm of the noise
+d=250;
+m=100;
+s=10;
+enorm=0.5;
+
+%randomly generate the matrix phi, pick the signal randomly
+phi = (1/sqrt(m))*random(makedist('Normal'),m,d);
+signal=zeros(d,1);
+signonzeros= randi([-5,5],s,1);
+supp=uint32.empty;
+while length(union(supp,uint32.empty))<s
+    supp = randi(d,1,s);
+end
+signal(supp)=signonzeros;
+e=random(makedist('Normal'),m,1);
+
+e=enorm*e/norm(e);
+obs=phi*signal+e;
+reconstruction=cosamp(phi,obs,s,2*enorm,signal);
+norm(reconstruction-signal)

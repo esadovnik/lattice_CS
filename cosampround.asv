@@ -1,0 +1,42 @@
+function a = cosampround(phi,u,s,tol,signal)
+v=u;
+[~,N]=size(phi);
+a=zeros(N,1);
+suppa=uint64.empty;
+k=0;
+while norm(v)>tol && k < 1000
+    y = phi'*v;
+    omega = uint64(maxindices(y,2*s));
+    suppb = union(omega,suppa);
+    if rich
+        blsq = richardson(phi(:,suppb),u,a(suppb),richsteps);
+    else
+        blsq = phi(:,suppb)\u;
+    end
+    b=zeros(N,1);
+    b(suppb)=blsq;
+    suppa = uint64(maxindices(b,s));
+    a = zeros(N,1);
+    a(suppa) = b(suppa);
+    v=u-phi*a;
+    k=k+1;
+end
+disp(k)
+end
+
+function maxinds = maxindices(v,s)
+Arraycopy = abs(v);
+maxinds=zeros(1,s);
+for j = 1:s
+   [~, maxinds(j)] = max(Arraycopy);
+   Arraycopy(maxinds(j)) = 0;
+end
+end
+
+function z = richardson(tallmat,u,z0,nsteps)
+v=tallmat'*u;
+z=z0;
+for k=1:nsteps
+    z=v+z-(tallmat'*(tallmat*z));
+end
+end

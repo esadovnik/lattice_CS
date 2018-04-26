@@ -46,7 +46,10 @@ suppa=uint64.empty;
 %  k is the iteration number.
 k=1;
 
-while norm(v)>tol && k < 1000
+while k < 200                              %Halting criterion option #1
+%while norm(v) < tol                      %Halting criterion option #2
+%while L^infty norm (phi' * v) < epsilon  %Halting criterion option #3
+
     % first we form the signal proxy y and the indices of its 2s largest
     % entries
     y = phi'*v;
@@ -57,13 +60,16 @@ while norm(v)>tol && k < 1000
     % squares to get the best possible reconstruction b supported on the
     % merged set
     suppb = union(omega,suppa);
-    if rich
-        blsq = richardson(phi(:,suppb),u,a(suppb),richsteps);
-    else
-        blsq = phi(:,suppb)\u;
-    end
+    %if rich
+    %    blsq = richardson(phi(:,suppb),u,a(suppb),richsteps);
+    %else
+ 
+    %end
+    phi_restricted = phi(:, suppb);
+    %blsq = phi(:,suppb)\u;
     b=zeros(N,1);
-    b(suppb)=blsq;
+    %b(suppb)=blsq;
+    b(suppb) = (inv((phi_restricted)' * phi_restricted ) * (phi_restricted)') * u;
     
     % We threshold b to its s largest entries to get the current signal
     % reconstruction, and update the support of the reconstruction.
@@ -76,14 +82,15 @@ while norm(v)>tol && k < 1000
     
     % We record the residual from the actual signal for plotting later, and
     % increment the iteration counter
-    residual(k)=norm(a-signal);
+    %residual(k)=norm(a-signal);
     k=k+1;
 end
 
 %  We display the number of iterations performed and the plot of the
 %  residual vs iteration count, and return the last reconstructed signal
-disp(k)
-plot(residual)
+%normaliterations = ['Iterations in normal = ', num2str(k)];
+%disp(normaliterations)
+%plot(residual)
 end
 
 %  The function maxindices takes in a vector v and an integer s and finds

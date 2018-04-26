@@ -8,7 +8,11 @@ v=u;
 a=zeros(N,1);
 suppa=uint64.empty;
 k=1;
-while norm(v)>tol && k < 1000
+
+while k < 5                              %Halting criterion option #1
+%while norm(v) < tol                      %Halting criterion option #2
+%while L^infty norm (phi' * v) < epsilon  %Halting criterion option #3
+    
     y = phi'*v;
     omega = uint64(maxindices(y,2*s));
     suppb = union(omega,suppa);
@@ -22,16 +26,19 @@ while norm(v)>tol && k < 1000
     suppa = uint64(maxindices(b,s));
     a = zeros(N,1);
     a(suppa) = b(suppa);
-    v=u-phi*a;
     
     %Here we round the reconstruction to the integer lattice
-    a=round(a);
+    a = round(a);
+    %a=round(2.0*a)/2.0;
     
-    residual(k)=norm(a-signal);
+    v=u-phi*a;
+    
+    %residual_round(k)=norm(a-signal);
     k=k+1;
 end
-disp(k)
-plot(residual_round)
+%roundingiterations = ['Iterations in rounding = ', num2str(k)];
+%disp(roundingiterations)
+%plot(residual_round)
 end
 
 function maxinds = maxindices(v,s)

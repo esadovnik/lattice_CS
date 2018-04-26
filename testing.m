@@ -2,22 +2,26 @@
 d = 250;
 m = 100;
 s = 10;
+enorm_min = 0;
+enorm_max = 5;
+enorm_step = 0.1;
+trials = 50;
 
 %Initialize lists for plotting at the end
-enorm_list = [0:0.1:5];
-normal_data = zeros(1,51);
-end_rounding_data = zeros(1,51);
-rounding_data = zeros(1,51);
+enorm_list = enorm_min:enorm_step:enorm_max;
+normal_data = zeros(1,round((enorm_max-enorm_min)/enorm_step + 1));
+end_rounding_data = zeros(1, round((enorm_max-enorm_min)/enorm_step + 1));
+rounding_data = zeros(1, round((enorm_max-enorm_min)/enorm_step + 1));
 
-for enorm = 0:0.1:5
+for enorm = enorm_min:enorm_step:enorm_max
     
     %Initialize lists for averaging
-    normal_results = zeros(1,50);
-    end_rounding_results = zeros(1,50);
-    rounding_results=  zeros(1,50);
+    normal_results = zeros(1,trials);
+    end_rounding_results = zeros(1,trials);
+    rounding_results=  zeros(1,trials);
     tol = max(enorm, 0.1);
     
-    for j=1:50
+    for j=1:trials
         
         %Randomly generate the matrix phi, the signal, and the error.
         phi = (1/sqrt(m))*random(makedist('Normal'),m,d);
@@ -28,7 +32,7 @@ for enorm = 0:0.1:5
             supp = randi(d,1,s);
         end
         signal(supp)=signonzeros;
-        e=random(makedist('Normal'),m,1);
+        e=rand(m,1);
         e=enorm*e/norm(e);
         
         %Make the sample and run the three CoSaMPs to get the reconstructions
@@ -44,19 +48,20 @@ for enorm = 0:0.1:5
         
     end
         
-    %Add average of the 50 trials into the list for plotting
-    normal_data(round(10*enorm + 1)) = mean(normal_results);
-    end_rounding_data(round(10*enorm + 1)) = mean(end_rounding_results);
-    rounding_data(round(10*enorm + 1)) = mean(rounding_results);
+    %Add average of the trials into the list for plotting
+    normal_data(round(enorm_list,2) == round(enorm,2)) = mean(normal_results);
+    end_rounding_data(round(enorm_list,2) == round(enorm,2)) = mean(end_rounding_results);
+    rounding_data(round(enorm_list,2) == round(enorm,2)) = mean(rounding_results);
     
 end
 
 %Plot everything
-hold on
 plot(enorm_list, normal_data, 'LineWidth',2)
-plot(enorm_list, end_rounding_data, 'LineWidth', 6)
+hold on
+plot(enorm_list, end_rounding_data, 'LineWidth', 2)
 plot(enorm_list, rounding_data,'LineWidth', 2)
+hold off
 legend('Normal CoSaMP','Rounding at end','Intermediate rounding')
 xlabel('Noise norm')
-ylabel('Average error in reconstruction (50 trials)')
+ylabel(['Average error in reconstruction (' num2str(trials) ' trials)'])
         
